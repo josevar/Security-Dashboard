@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width = device-width, initial-scale = 1, shrink-to-fit = no">
+  <meta name="description" content="Security Dashboard">
+  <meta name="author" content="Jose Varela">
+  <link rel="stylesheet" href="css/bootstrap.css">
+
+  <title>Security Dashboard</title>
+  <link href="css/grid.css" rel="stylesheet">
+  <style>
+    .fixed-panel {
+      min-height: 400px;
+      max-height: 1200px;
+    }
+
+    .bar {
+      fill: #d64933;
+    }
+
+    .axis text {
+      font: 10px sans-serif;
+      fill: rgb(255, 255, 255);
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: rgb(255, 255, 255);
+      shape-rendering: crispEdges;
+    }
+
+    text {
+      font: 13px sans-serif;
+      fill: rgb(255, 255, 255);
+    }
+
+    .countries :hover {
+      fill-opacity: 0.7;
+    }
+
+    .countries {
+      fill: #bbb;
+    }
+
+    .country-borders {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    div.tooltip {
+      position: absolute;
+      text-align: center;
+      width: 60px;
+      height: 28px;
+      padding: 2px;
+      font: 12px sans-serif;
+      background: white;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="queryApp">
+    <div class="container-fluid">
+      <nav class="navbar navbar-expand navbar-dark bg-dark">
+      <div class="collapse navbar-collapse justify-content-md-center" id="nav">
+        <ul class="navbar-nav">
+          <li v-bind:class="[hash === '#dashboard' ? 'active' : '', 'nav-item']">
+            <a v-on:click="hash = '#dashboard'" class="nav-link" href="#dashboard">Security Dashboard</a>
+          </li>
+          <li v-bind:class="[hash === '#map' ? 'active' : '', 'nav-item']">
+            <a v-on:click="hash = '#map'" class="nav-link" href="#map">Map Visualization</a>
+	  </li>
+        </ul>
+      </div>
+      </nav>
+
+      <template v-if="hash === '#dashboard'">
+        <div class="dashboard">
+
+          <div class="row">
+            <div class="col-md-8">
+              <div ckass="panel panel-card">
+                <div class="panel-title">
+                  <h5 class="no-margin m-b">Most Seen IPs</h5>
+                </div>
+                <div class="panel-body fixed-panel IPCount">
+                  <query-graph file="/IPCount.json" alias="IPCount" type="bar" xtitle="IP Address" ytitle="Count"></query-graph>
+                </div>
+	      </div>
+            </div>
+            <div class="col-md-4">
+              <div class="panel panel-card">
+                <div class="panel-title">
+                  <h5 class="no-margin m-b">Stats</h5>
+                </div>
+                <div class="panel-body fixed-panel">
+		  <p>Total Distinct IPs in database: <query-statistic file="/DIP.json" alias="DIP"></query-statistic></p>
+                  <p>Total failed login attempts: <query-statistic file="/Failed.json" alias="Failed"></query-statistic></p>
+                  <p>Total successful logins: <query-statistic file="/Accepted.json" alias="Accepted"></query-statistic></p>
+                  <p>Last DB Update: <query-statistic file="/DateTime.json" alias="DateTime"></query-statistic></p>
+		  <p>Date First Data Added: <query-statistic file="/FirstDate.json" alias="DateTime"></query-statistic></p>
+                </div>
+              </div>
+            </div>
+	  </div>
+
+	  <div class="row">
+            <div class="col">
+              <div ckass="panel panel-card">
+                <div class="panel-title">
+                        <!--<h5 class="no-margin m-b">Login Attempts for March By Every Hour</h5>-->
+                        <h5 class="no-margin m-b">Most Seen Attempted Accounts</h5>
+                </div>
+                <div class="panel-body fixed-panel UserIDCount">
+                        <!--<query-graph query="SELECT CONCAT(hour(DateTime), ':00') AS X, COUNT(*) AS Y FROM `ssh_logs` WHERE DATEDIFF(CURRENT_DATE, DateTime) > 0 AND DATEDIFF(CURRENT_DATE, DateTime) < 29 GROUP BY hour(DateTime);" alias="UserIDCount" type="bar"></query-graph>-->
+                        <query-graph file="/UserIDCount.json" alias="UserIDCount" type="bar" xtitle="Username" ytitle="Count"></query-graph>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+     <template v-if="hash === '#map'">
+       <div class="map">
+         <div class="row">
+           <div class="col">
+             <div class="panel panel-card">
+	       <div class="panel-title">
+		 <h5 class="no-margin m-b">Map</h5>
+	       </div>
+	       <div class="panel-body fixed-panel map-holder">
+                 <drawmap file="/countryCount.csv" alias="map-holder"></drawmap>
+	       </div>
+	     </div>
+	   </div>
+	 </div>
+	 <div class="row">
+           <div class="col">
+             <div class="panel panel-card">
+               <div class="panel-title">
+                 <h5 class="no-margin m-b">Countries with Most IPs in DB</h5>
+               </div>
+               <div class="panel-body fixed-panel Country">
+                 <query-graph file="/topCountries.json" alias="Country" type="bar" xtitle="Country Code" ytitle="Count"></query-graph>
+               </div>
+             </div>
+	   </div>
+	 </div>
+       </div>
+      </template>
+
+    </div>
+  </div>
+  <script src="js/d3/d3.js"></script>
+  <script src="js/topojson/topojson.js"></script>
+  <script src="js/jquery/jquery-3.3.1.js"></script>
+  <script src="js/bootstrap/bootstrap.bundle.js"></script>
+  <script src="js/vue/vue.js"></script>
+  <script src="js/query.js"></script>
+</body>
+</html>
